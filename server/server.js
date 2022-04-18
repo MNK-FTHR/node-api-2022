@@ -1,22 +1,40 @@
-const app = require('express')();
-const http = require('http').createServer(app);
-const io = require('socket.io')(http, {
-  cors: {
-    origins: ['http://localhost:8080']
-  }
-});
+var app = require('express')()
+var http = require('http').Server(app)
+var io = require('socket.io')(http)
 
-app.get('/', (req, res) => {
-  res.send('<h1>Hey Socket.io</h1>');
-});
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+  res.setHeader('Access-Control-Allow-Credentials', true);
 
-io.on('connection', (socket) => {
-  console.log('a user connected');
-  socket.on('disconnect', () => {
-    console.log('user disconnected');
+  next();
+})
+
+app.get('/clients', (req, res) => {
+  res.send(Object.keys(io.sockets.clients().connected))
+})
+let messagesList = []
+io.on('connection', socket => {
+  console.log(`A user connected with socket id ${socket.id}`)
+
+  socket.broadcast.emit('user-connected', socket.id);
+
+  socket.on('chat message', (msg) => {
+    console.log("MESSAGE DATA", msg);
+    messagesList.push(msg)
+    io.emit('chat message', messagesList);
   });
-});
 
-http.listen(3000, () => {
-  console.log('htp://localhost:3000/');
-});
+  socket.on('disconnect', () => {
+    socket.broadcast.emit('user-disconnected', socket.id)
+  })
+
+  socket.on('nudge-client', data => {
+    socket.broadcast.to(data.to).emit('client-nudged', data)
+  })
+})
+
+http.listen(5000, () => {
+  console.log('http://localhost:5000')
+})
