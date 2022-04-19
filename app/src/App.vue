@@ -1,12 +1,18 @@
 <script setup>
 import io from 'socket.io-client';
-import { ref  } from 'vue'
-
+import { ref, computed  } from 'vue'
 const socket = io("http://localhost:5000", { transports : ['websocket']});
 let message =ref('');
 let socketId = ref('')
 let messages = ref([]);
 socket.on("connect", () => {
+  if (localStorage.lastId) {
+    new Promise((resolve, reject) => {
+      socket.emit('lastId', localStorage.lastId)
+    }).then(localStorage.lastId = socket.id)
+  }else{
+    localStorage.lastId = socket.id
+  }
   socketId.value =socket.id
 });
 function send() {
@@ -28,8 +34,29 @@ socket.on('chat message', function(msg) {
     messages.value.sort((a, b)=>{
       return new Date(b.date) - new Date(a.date);
     })
-    console.log("FROM BACK", messages.value);
+    // console.log("FROM BACK", messages.value);
 });
+
+const timeDiff = (input) => {
+  let s = Date.now()-input;
+  var ms = s % 1000;
+  s = (s - ms) / 1000;
+  var secs = s % 60;
+  s = (s - secs) / 60;
+  var mins = s % 60;
+  var hrs = (s - mins) / 60;
+  if (hrs >= 24) {
+    return hrs > 24 ? `il a ${Math.floor(hrs/24)} jours` : `il a ${Math.floor(hrs/24)} jour`
+  }else if (hrs > 0) {
+    return hrs > 1 ? `il a ${hrs} heures` : `il a ${hrs} heure`
+  }else if (mins>0) {
+    return mins > 1 ? `il a ${mins} minute` : `il a ${mins} minutes`
+  }else if (secs>0) {
+    return secs > 1 ? `il a ${secs} seconde` : `il a ${secs} secondes`
+  }else{
+    return "a l'instant"
+  }
+}
 </script>
 <template>
 <body>
@@ -42,8 +69,8 @@ socket.on('chat message', function(msg) {
             <div class="messages">
               <p class="msg" id="msg-0">{{message.message}}</p>
             </div>
-            <span class="timestamp"><span class="username">Name</span>&bull;<span class="posttime">{{
-              Date.now() - message.time
+            <span class="timestamp"><span class="username">{{socketId}}</span>&bull;<span class="posttime">{{
+              timeDiff(message.time)
             }}</span></span>
           </div>
         </div>
