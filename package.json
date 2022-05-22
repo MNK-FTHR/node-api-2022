@@ -19,6 +19,7 @@
   "homepage": "https://github.com/MNK-FTHR/node-api-2022#readme",
   "dependencies": {
     "fastify": "^3.29.0",
+    "mongodb": "^4.5.0",
     "mongoose": "^6.3.4"
   }
 }
