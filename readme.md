@@ -23,19 +23,30 @@ Voici les différents lieux et actions permettant de modifier ou créer des chos
 
 ## /temple: 
 
+- /temple (voir son samourai) (READ : get)
+
 ### Entraîner son samourai:
 
-/temple/meditating (sagesse) (UPDATE : put)
-/temple/bodytraining (determination) (UPDATE : put)
-/temple/fieldtraining (force) (UPDATE : put)
+- /temple/meditating (sagesse) (UPDATE : put)
+
+- /temple/bodytraining (determination) (UPDATE : put)
+
+- /temple/fieldtraining (force) (UPDATE : put)
 
 
 ## /forge
 
+- /forge (voir ses armes) (READ : get)
+
 ### Fabriquer des armes
 
-/forge/anvil (CREATE : post)
-/forge/temper (efficacité) (UPDATE : put)
-/forge/grindstone (poids) (UPDATE : put)
-/forge/melter/:name: (DELETE weapon by name : delete)
-/forge/fastmelter (DELETE last weapon : delete)
+- /forge/anvil (CREATE : post)
+
+- /forge/temper (efficacité) (UPDATE : put)
+
+- /forge/grindstone (poids) (UPDATE : put)
+
+- /forge/melter/:name: (DELETE weapon by name : delete)
+
+- /forge/fastmelter (DELETE last weapon : delete)
+

@@ -1,0 +1,24 @@
+{
+  "name": "node-api-2022",
+  "version": "1.0.0",
+  "description": "Cette application est une API utilisan mongoDB et fastify, le sujet est un \"jeux\" sur le thème des samourais, dans lequel vous incarnez un de ces dernier qui doit s'entrainer et créer des armes.",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MNK-FTHR/node-api-2022.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MNK-FTHR/node-api-2022/issues"
+  },
+  "homepage": "https://github.com/MNK-FTHR/node-api-2022#readme",
+  "dependencies": {
+    "fastify": "^3.29.0",
+    "mongoose": "^6.3.4"
+  }
+}
