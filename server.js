@@ -1,4 +1,5 @@
 const fastify = require('fastify')({ logger: true });
+require('dotenv').config();
 
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
@@ -22,7 +23,7 @@ const weaponNames = ["Tachi", "Nodachi", "Masakari", "Yari", "Naginata", "Wakisa
     "Revolver silencieux OTs-38 Stetchkine"
 ]
 try {
-    mongoose.connect('mongodb+srv://MNKFTHR:azerty123@cluster0.paz9r.mongodb.net/?retryWrites=true&w=majority')
+    mongoose.connect(process.env.MONGO_URL)
   } catch (e) {
     console.error(e);
   }
@@ -76,9 +77,9 @@ fastify.get('/forge', async (request, reply) => {
     const weapon = await Weapon.find({});
     return  weapon;
 });
-fastify.post('/forge', async (request, reply) => {
+fastify.post('/forge/anvil', async (request, reply) => {
     const samourai = await Samourai.find({});
-    
+    const weapons = await Weapon.find({});
     if (samourai.length) {
         let updatedSamourai = samourai[0]; 
         let stats = new Map();
@@ -86,13 +87,17 @@ fastify.post('/forge', async (request, reply) => {
         stats.set('maxEff', (10 * (1+ samourai[0].patience/10)));
         stats.set('minPoids', (50/(1+ samourai[0].patience/10)));
         stats.set('maxPoids', (50/(1+ samourai[0].patience/20)));
+        let weaponName = weaponNames[Math.floor(Math.random()*weaponNames.length)];
+        if (weapons.length && weapons.map(w =>  w.nom).includes(weaponName)) {
+            await Weapon.findByIdAndDelete(weapons.filter(w=> w.nom == weaponName)[0].id)
+        }
         const weapon = await Weapon.create({
             efficacite: Math.floor(Math.random() * (stats.get('maxEff') - stats.get('minEff')) + stats.get('minEff')),
             poids: Math.floor(Math.random() *  (stats.get('maxPoids') - stats.get('minPoids')) + stats.get('minPoids')),
             rarete: Math.floor(Math.random() * 11),
-            nom: weaponNames[Math.floor(Math.random()*weaponNames.length)]
+            nom: weaponName
         });
-        updatedSamourai.patience = samourai[0].patience + 1;
+        updatedSamourai.patience = samourai[0].patience + 1 * (1+weapons.length/50);
         await Samourai.findByIdAndUpdate(updatedSamourai.id, updatedSamourai);
         return  "C'est en forgeant qu'on se fait des ampoules";
     }else{
@@ -100,6 +105,69 @@ fastify.post('/forge', async (request, reply) => {
     }
 });
 
+fastify.put('/forge/:tool/:name', async (request, reply) => {
+    const samourai = await Samourai.find({});
+    const weapons = await Weapon.find({});
+    let updatedWeapon = weapons.filter(f=>f.nom == request.params.name)[0];
+    let updatedSamourai = samourai[0]
+    switch (request.params.tool) {
+        case "temper":
+            updatedWeapon.efficacite = (weapons.filter(f=>f.nom == request.params.name)[0].efficacite + 1*(1*samourai[0].patience/20)).toFixed(2);
+            await Weapon.findByIdAndUpdate(
+                updatedWeapon._id,
+                updatedWeapon
+            );
+            break;
+        case "grindstone":
+            updatedWeapon.poids = (weapons.filter(f=>f.nom == request.params.name)[0].poids + 1*(1*samourai[0].patience/20)).toFixed(2);
+            await Weapon.findByIdAndUpdate(
+                updatedWeapon.id,
+                updatedWeapon
+            );
+            break;
+    }
+    updatedSamourai.patience = samourai[0].patience + 1 * (1+weapons.length/75);
+    await Samourai.findByIdAndUpdate(updatedSamourai.id, updatedSamourai);
+    return updatedWeapon
+});
+
+fastify.delete('/forge/melter/:name', async (request, reply) => {
+    const weapons = await Weapon.find({});
+    if (weapons.filter(w=>w.nom == request.params.name).length) {
+        await Weapon.deleteOne(weapons.filter(w=>w.nom == request.params.name)[0]);
+        return "Vous jetez "+request.params.name+" dans la fonderie"
+    } else {
+        return "Vous n'avez pas d'armes"
+    }
+});
+
+fastify.delete('/forge/:trash', async (request, reply) => {
+    const weapons = await Weapon.find({});
+    let kept = weapons[weapons.length - 1];
+    let resp = ""
+    console.log(kept);
+    if (weapons.length) {
+        switch (request.params.trash) {
+            case "fastmelter":
+                resp = "Vous jetez votre dernière création au feu"
+                    await Weapon.deleteOne(kept);
+                    break;
+                    case "ragemelt":
+                resp = "Vous jetez TOUT sauf votre dernière création au feu"
+                await Weapon.deleteMany({});
+                await Weapon.create({
+                    efficacite: kept.efficacite,
+                    poids: kept.poids,
+                    rarete: kept.rarete,
+                    nom: kept.nom,
+                })
+                break;
+        }
+    }else{
+        resp = "Vous n'avez pas d'armes"
+    }
+    return resp;
+});
 // Redirect
 fastify.get('/', async (request, reply) => {
     reply.redirect('/temple');

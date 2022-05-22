@@ -1,5 +1,12 @@
 ### Projet node
 
+# Lancement
+
+- npm i
+- copy .env.example .env
+- remplissez le .env avec votre lien mongo
+- npm run dev
+
 # Description:
 
 Cette application est une API utilisan mongoDB et fastify, le sujet est un "jeux" sur le thème des samourais, dans lequel vous incarnez un de ces dernier qui doit s'entrainer et créer des armes.
@@ -42,11 +49,12 @@ Voici les différents lieux et actions permettant de modifier ou créer des chos
 
 - /forge/anvil (CREATE : post)
 
-- /forge/temper (efficacité) (UPDATE : put)
+- /forge/temper/:nom (efficacité) (UPDATE : put)
 
-- /forge/grindstone (poids) (UPDATE : put)
+- /forge/grindstone/:nom (poids) (UPDATE : put)
 
-- /forge/melter/:name: (DELETE weapon by name : delete)
+- /forge/melter/:nom (DELETE weapon by name : delete)
 
 - /forge/fastmelter (DELETE last weapon : delete)
 
+- /forge/ragemelt (DELETE all but last weapon : delete)
