@@ -7,6 +7,8 @@
 - remplissez le .env avec votre lien mongo
 - npm run dev
 
+Utilisez Postman pour plus de facilité
+
 # Description:
 
 Cette application est une API utilisan mongoDB et fastify, le sujet est un "jeux" sur le thème des samourais, dans lequel vous incarnez un de ces dernier qui doit s'entrainer et créer des armes.
