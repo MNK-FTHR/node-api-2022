@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
+//Schéma du samourai
 const samouraiSchema = new Schema({
     force: { type: Number, required: true },
     determination: { type: Number, required: true },
@@ -10,18 +11,22 @@ const samouraiSchema = new Schema({
     patience: { type: Number, required: true },
     sagesse: { type: Number, required: true },
 });
+//Schéma des samourai
 const weaponSchema = new Schema({
     efficacite: { type: Number, required: true },
     poids: { type: Number, required: true },
     rarete: { type: Number, required: true },
     nom: { type: String, required: true },
 });
+// On créer les models
 const Samourai = mongoose.model('samourai', samouraiSchema);
 const Weapon = mongoose.model('weapon', weaponSchema);
+// Une liste de noms
 const weaponNames = ["Tachi", "Nodachi", "Masakari", "Yari", "Naginata", "Wakisashi", "Yumi", "Katana",
     "Tanto", "Clé a molette", "Knacki Herta", "Feuille des impôts", "VS Code, thème clair", "Patrick Balkany",
     "Revolver silencieux OTs-38 Stetchkine"
 ]
+// Connexion à la bdd avec la sécurité du .env
 try {
     mongoose.connect(process.env.MONGO_URL)
   } catch (e) {
@@ -30,6 +35,7 @@ try {
 // Temple
 fastify.get('/temple', async (request, reply) => {
     const samourai = await Samourai.find({});
+    //Créer le samourai s'il n'existe pas
     if (samourai.length) {
         
         return {"Votre samourai": samourai[0]};
@@ -48,6 +54,7 @@ fastify.get('/temple', async (request, reply) => {
 fastify.put('/temple/:action', async (request, reply) => {
     const samourai = await Samourai.find({});
     let updatedSamourai = samourai[0];
+    // Switch pour les routes
     if (samourai.length) {
         let resp = ""
         switch (request.params.action) {
@@ -69,7 +76,7 @@ fastify.put('/temple/:action', async (request, reply) => {
         }
         return resp;
     }else{
-        return "Bah alors ? on essaye de casser le code ???"
+        return "Vous n'avez pas de samourai"
     }
 });
 // Forge
@@ -80,6 +87,7 @@ fastify.get('/forge', async (request, reply) => {
 fastify.post('/forge/anvil', async (request, reply) => {
     const samourai = await Samourai.find({});
     const weapons = await Weapon.find({});
+    // Créer une arme aléatoire
     if (samourai.length) {
         let updatedSamourai = samourai[0]; 
         let stats = new Map();
@@ -101,7 +109,7 @@ fastify.post('/forge/anvil', async (request, reply) => {
         await Samourai.findByIdAndUpdate(updatedSamourai.id, updatedSamourai);
         return  "C'est en forgeant qu'on se fait des ampoules";
     }else{
-        return "Bah alors ? on essaye de casser le code ???"
+        return "Vous n'avez pas de samourai"
     }
 });
 
@@ -145,7 +153,6 @@ fastify.delete('/forge/:trash', async (request, reply) => {
     const weapons = await Weapon.find({});
     let kept = weapons[weapons.length - 1];
     let resp = ""
-    console.log(kept);
     if (weapons.length) {
         switch (request.params.trash) {
             case "fastmelter":
@@ -168,12 +175,13 @@ fastify.delete('/forge/:trash', async (request, reply) => {
     }
     return resp;
 });
-// Redirect
+
+// Redirect sur /temple si on va sur /
 fastify.get('/', async (request, reply) => {
     reply.redirect('/temple');
 });
 
-
+//Lancer le serveur
 const start = async () => {
   try {
     await fastify.listen(3000)
